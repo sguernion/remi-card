@@ -1,0 +1,38 @@
+{
+  "name": "remi-card",
+  "version": "1.0.0",
+  "description": "A custom card for displaying Rémi UrbanHello device data in Home Assistant",
+  "main": "dist/remi-card.js",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "lint": "eslint src --ext .ts"
+  },
+  "keywords": [
+    "home-assistant",
+    "lovelace",
+    "custom-card",
+    "remi",
+    "urbanhello"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "custom-card-helpers": "^1.9.0",
+    "lit": "^2.8.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "rollup": "^4.9.6",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup-plugin-serve": "^2.0.3",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3"
+  }
+}
