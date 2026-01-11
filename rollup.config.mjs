@@ -4,7 +4,6 @@ import typescript from '@rollup/plugin-typescript';
 import json from '@rollup/plugin-json';
 import url from '@rollup/plugin-url';
 import terser from '@rollup/plugin-terser';
-import copy from 'rollup-plugin-copy';
 
 export default {
   input: 'src/remi-card.ts',
@@ -31,11 +30,6 @@ export default {
       declaration: false,
     }),
     json(),
-    // copy assets into dist so they are available at dist/assets
-    copy({
-      targets: [{ src: 'assets', dest: 'dist' }],
-      verbose: true,
-    }),
     terser({
       compress: {
         drop_console: false,
