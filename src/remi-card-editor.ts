@@ -1,7 +1,15 @@
+/**
+ * Configuration editor for the Rémi Card
+ * Provides a UI to configure the card settings in the Lovelace editor
+ */
+
 import { LitElement, html, css, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant } from 'custom-card-helpers';
 
+/**
+ * Configuration interface for the Rémi Card
+ */
 interface RemiCardConfig {
   type: string;
   device_id: string;
@@ -14,15 +22,27 @@ interface RemiCardConfig {
   hours_to_show?: number;
 }
 
+/**
+ * Editor component for configuring Rémi Card settings
+ */
 @customElement('remi-card-editor')
 export class RemiCardEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @state() private _config!: RemiCardConfig;
 
+  /**
+   * Set the configuration for the card
+   * @param config - The card configuration object
+   */
   public setConfig(config: RemiCardConfig): void {
     this._config = config;
   }
 
+  /**
+   * Handle value changes from form inputs
+   * Dispatches a 'config-changed' event with the updated configuration
+   * @param ev - The custom event containing the changed value
+   */
   private _valueChanged(ev: CustomEvent): void {
     if (!this._config || !this.hass) {
       return;
@@ -46,6 +66,10 @@ export class RemiCardEditor extends LitElement {
     }
   }
 
+  /**
+   * Render the configuration editor UI
+   * @returns Template result containing the editor form
+   */
   protected render(): TemplateResult {
     if (!this.hass || !this._config) {
       return html``;

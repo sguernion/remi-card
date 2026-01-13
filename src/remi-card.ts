@@ -1,8 +1,16 @@
+/**
+ * Rémi Card - A custom Home Assistant Lovelace card for Rémi UrbanHello baby sleep trainer devices
+ * Provides controls for face selection, night light, temperature monitoring, and connectivity status
+ */
+
 import { LitElement, html, css, PropertyValues, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
-import { FACE_NAMES, FACE_ICONS, getFaceIcon } from './face-images';
+import { FACE_NAMES, getFaceIcon } from './face-images';
 
+/**
+ * Configuration interface for the Rémi Card
+ */
 interface RemiCardConfig {
   type: string;
   device_id: string;
@@ -15,6 +23,9 @@ interface RemiCardConfig {
   hours_to_show?: number;
 }
 
+/**
+ * Entity identifiers for Rémi device sensors and controls
+ */
 interface RemiEntity {
   face: string | null;
   faceSelect: string | null;
@@ -24,6 +35,9 @@ interface RemiEntity {
   rssi: string | null;
 }
 
+/**
+ * Custom Lovelace card for Rémi UrbanHello devices
+ */
 @customElement('remi-card')
 export class RemiCard extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -37,6 +51,11 @@ export class RemiCard extends LitElement {
     rssi: null,
   };
 
+  /**
+   * Get a default stub configuration for the card
+   * Used when adding the card to Lovelace for the first time
+   * @returns Default configuration object
+   */
   public static getStubConfig(): RemiCardConfig {
     return {
       type: 'custom:remi-card',
@@ -50,11 +69,22 @@ export class RemiCard extends LitElement {
     };
   }
 
+  /**
+   * Get the configuration editor element
+   * Dynamically imports and creates the editor component
+   * @returns Promise resolving to the editor element
+   */
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import('./remi-card-editor');
     return document.createElement('remi-card-editor');
   }
 
+  /**
+   * Set the card configuration
+   * Validates and applies the configuration with defaults
+   * @param config - The card configuration object
+   * @throws Error if device_id is not specified
+   */
   public setConfig(config: RemiCardConfig): void {
     if (!config.device_id) {
       throw new Error('You must specify a device_id');
@@ -72,10 +102,20 @@ export class RemiCard extends LitElement {
     this._updateEntities();
   }
 
+  /**
+   * Get the card size for layout purposes
+   * @returns Card height in grid rows
+   */
   public getCardSize(): number {
     return 5;
   }
 
+  /**
+   * Determine if the card should update based on changed properties
+   * Optimizes rendering by only updating when relevant entities change
+   * @param changedProps - Map of changed properties
+   * @returns True if the card should re-render
+   */
   protected shouldUpdate(changedProps: PropertyValues): boolean {
     if (changedProps.has('_config')) {
       return true;
@@ -97,6 +137,11 @@ export class RemiCard extends LitElement {
     return true;
   }
 
+  /**
+   * Lifecycle method called after the element updates
+   * Updates entity references when config or hass changes
+   * @param changedProps - Map of changed properties
+   */
   protected updated(changedProps: PropertyValues): void {
     super.updated(changedProps);
     if (changedProps.has('hass') || changedProps.has('_config')) {
@@ -104,6 +149,10 @@ export class RemiCard extends LitElement {
     }
   }
 
+  /**
+   * Update entity identifiers based on the device ID
+   * Constructs entity IDs for all Rémi device sensors and controls
+   */
   private _updateEntities(): void {
     if (!this.hass || !this._config) return;
 
@@ -118,25 +167,47 @@ export class RemiCard extends LitElement {
     };
   }
 
+  /**
+   * Get the state object for an entity
+   * @param entityId - The entity ID to retrieve
+   * @returns The entity state object or null if not found
+   */
   private _getState(entityId: string | null): any {
     if (!entityId || !this.hass) return null;
     return this.hass.states[entityId];
   }
 
+  /**
+   * Get the current face state
+   * @returns The face state string or null if unavailable
+   */
   private _getFaceState(): string | null {
     const faceEntity = this._getState(this._entities.face);
     if (!faceEntity || faceEntity.state === 'unavailable') return null;
     return faceEntity.state;
   }
 
+  /**
+   * Get the night light state
+   * @returns The light entity state object
+   */
   private _getLightState(): any {
     return this._getState(this._entities.light);
   }
 
+  /**
+   * Get the temperature sensor state
+   * @returns The temperature entity state object
+   */
   private _getTemperatureState(): any {
     return this._getState(this._entities.temperature);
   }
 
+  /**
+   * Control the night light brightness
+   * Turns the light on/off or adjusts brightness
+   * @param brightness - Brightness percentage (0-100), 0 turns off the light
+   */
   private _handleLightControl(brightness: number): void {
     if (!this._entities.light) return;
 
@@ -152,6 +223,10 @@ export class RemiCard extends LitElement {
     }
   }
 
+  /**
+   * Change the displayed face on the Rémi device
+   * @param face - The face state to select (e.g., 'sleepyFace', 'awakeFace')
+   */
   private _handleFaceSelect(face: string): void {
     if (!this._entities.faceSelect) return;
 
@@ -161,15 +236,22 @@ export class RemiCard extends LitElement {
     });
   }
 
-  private _handleSliderChange(e: Event): void {
+  /**
+   * Handle brightness slider input changes
+   * Provides immediate UI feedback without calling the service
+   * @param _e - The input event (unused)
+   */
+  private _handleSliderChange(_e: Event): void {
     // Update UI immediately for smooth interaction
-    const target = e.target as HTMLInputElement;
-    const brightness = parseInt(target.value);
-
     // Visual feedback only, don't call service yet
     this.requestUpdate();
   }
 
+  /**
+   * Handle brightness slider release
+   * Calls the light service when user finishes dragging
+   * @param e - The change event containing the final brightness value
+   */
   private _handleSliderRelease(e: Event): void {
     // Call service when slider is released
     const target = e.target as HTMLInputElement;
@@ -182,6 +264,10 @@ export class RemiCard extends LitElement {
     }
   }
 
+  /**
+   * Open the more-info dialog for an entity
+   * @param entityId - The entity ID to show details for
+   */
   private _handleMoreInfo(entityId: string | null): void {
     if (!entityId) return;
 
@@ -193,6 +279,10 @@ export class RemiCard extends LitElement {
     this.dispatchEvent(event);
   }
 
+  /**
+   * Render the card header with face icon and status information
+   * @returns Template result for the header section
+   */
   private _renderHeader(): TemplateResult {
     const faceState = this._getFaceState();
     const lightState = this._getLightState();
@@ -233,6 +323,10 @@ export class RemiCard extends LitElement {
     `;
   }
 
+  /**
+   * Render the night light controls with brightness slider
+   * @returns Template result for the light control section
+   */
   private _renderLightControls(): TemplateResult {
     const lightState = this._getLightState();
     const isOn = lightState?.state === 'on';
@@ -269,6 +363,10 @@ export class RemiCard extends LitElement {
     `;
   }
 
+  /**
+   * Render the face selector buttons
+   * @returns Template result for the face selector section
+   */
   private _renderFaceSelector(): TemplateResult {
     const faceSelectEntity = this._getState(this._entities.faceSelect);
     if (!faceSelectEntity) return html``;
@@ -302,6 +400,11 @@ export class RemiCard extends LitElement {
     `;
   }
 
+  /**
+   * Render the temperature graph placeholder
+   * Clicking opens the entity's history dialog
+   * @returns Template result for the temperature section
+   */
   private _renderTemperatureGraph(): TemplateResult {
     const tempEntity = this._entities.temperature;
     if (!tempEntity) return html``;
@@ -317,6 +420,11 @@ export class RemiCard extends LitElement {
     `;
   }
 
+  /**
+   * Render the connectivity status section
+   * Shows WiFi connection status and signal strength
+   * @returns Template result for the connectivity section
+   */
   private _renderConnectivity(): TemplateResult {
     const connectivityState = this._getState(this._entities.connectivity);
     const rssiState = this._getState(this._entities.rssi);
@@ -347,6 +455,11 @@ export class RemiCard extends LitElement {
     `;
   }
 
+  /**
+   * Render the complete card
+   * Combines all sections based on configuration
+   * @returns Template result for the entire card
+   */
   protected render(): TemplateResult {
     if (!this._config || !this.hass) {
       return html``;

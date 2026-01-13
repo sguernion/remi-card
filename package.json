@@ -2,11 +2,12 @@
   "name": "remi-card",
   "version": "1.0.0",
   "description": "A custom card for displaying Rémi UrbanHello device data in Home Assistant",
+  "type": "module",
   "main": "dist/remi-card.js",
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -c -w",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src"
   },
   "keywords": [
     "home-assistant",
